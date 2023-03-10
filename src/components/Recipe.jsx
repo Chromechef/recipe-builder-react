@@ -323,6 +323,7 @@ function Recipe() {
     return (
         <>
             <div className='margin-bottom'>
+            <hr />
                 {filteredData.map((form, formIndex) => (
                     <div key={formIndex}>
                         <section className='recipe-header'>
@@ -563,6 +564,7 @@ function Recipe() {
                             </div>
                         ))}
                     </div>
+                    <hr />
                 ))}
             </div>
             <section className='navigate-contianer'>
