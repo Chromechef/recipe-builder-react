@@ -41,20 +41,26 @@ function Recipe() {
             { id: 9, label: "Beverage" },
             { id: 10, label: "Dessert" }
         ])
+
         useEffect(() => {
             const middleIndex = Math.floor(buttons.length / 10)
             const typeSelected = buttons[middleIndex].label
-            if (buttons[middleIndex].id === buttons[1].id) {
-                const newFormData = [...formData]
-                // } else {
-                //     console.log(searchTerm)
-                //     setSearchTerm(typeSelected)
-                // }
-                if (typeSelected == "All") {
-                    console.log(typeSelected)
-                    setSearchTerm('')
-                }
-            }
+            // BUG *** 
+            // when type selected is logged it gives the correct buttons string
+            // Trying to have setSearchTerm be set to the typeSelected value
+            // When I do this it no longer allows the buttons to be changed. 
+            console.log(typeSelected)
+            // if (typeSelected == "All") {
+            //     setSearchTerm("")
+            // }
+            // else {
+            //     setSearchTerm(typeSelected)
+            // }
+
+            // code below does not do what I anticipated. Ignore for now.
+            // if (buttons[middleIndex].id === buttons[1].id) {
+            // }
+
         }, [buttons])
 
         const handlePrevClick = () => {
@@ -299,7 +305,8 @@ function Recipe() {
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    // BUG when used it disables all functions to the form.////
+    // BUG 
+    // when used it disables all functions to the form "Sometimes".////
     const filteredData = formData.filter((form) => {
         return form.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             form.type.toLowerCase().includes(searchTerm.toLowerCase())
@@ -310,6 +317,8 @@ function Recipe() {
         localStorage.setItem("formData", JSON.stringify(formData))
     }, [formData])
 
+    // Feature
+    // Trying to dynamicly change the height of the textarea fields as person types
 
     // const textarea = document.getElementsByClassName('.textareaTitle')
     // textarea.addEventListener("keyup", e => {
