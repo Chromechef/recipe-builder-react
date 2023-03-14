@@ -5,6 +5,7 @@ function Recipe() {
     const [formData, setFormData] = useState(
         JSON.parse(localStorage.getItem("formData")) || [
             {
+                id: nanoid(),
                 name: "",
                 description: "",
                 type: "",
@@ -15,8 +16,9 @@ function Recipe() {
                 allergy: "",
                 checked: false,
                 isOpen: false,
-                inputs: [{ input1: "", input2: "", select: "", checked: false }],
-                instructions: [{ instruction: "", checked: false }]
+                isFiltered: false,
+                inputs: [{ id: nanoid(), input1: "", input2: "", select: "", checked: false }],
+                instructions: [{ id: nanoid(), instruction: "", checked: false }]
             },
         ]
     )
@@ -41,26 +43,20 @@ function Recipe() {
             { id: 9, label: "Beverage" },
             { id: 10, label: "Dessert" }
         ])
-
         useEffect(() => {
             const middleIndex = Math.floor(buttons.length / 10)
             const typeSelected = buttons[middleIndex].label
-            // BUG *** 
-            // when type selected is logged it gives the correct buttons string
-            // Trying to have setSearchTerm be set to the typeSelected value
-            // When I do this it no longer allows the buttons to be changed. 
-            console.log(typeSelected)
-            // if (typeSelected == "All") {
-            //     setSearchTerm("")
-            // }
-            // else {
-            //     setSearchTerm(typeSelected)
-            // }
-
-            // code below does not do what I anticipated. Ignore for now.
-            // if (buttons[middleIndex].id === buttons[1].id) {
-            // }
-
+            if (buttons[middleIndex].id === buttons[1].id) {
+                const newFormData = [...formData]
+                // } else {
+                //     console.log(searchTerm)
+                //     setSearchTerm(typeSelected)
+                // }
+                if (typeSelected == "All") {
+                    console.log(typeSelected)
+                    setSearchTerm('')
+                }
+            }
         }, [buttons])
 
         const handlePrevClick = () => {
@@ -103,6 +99,7 @@ function Recipe() {
         setFormData(
             [
                 {
+                    id: nanoid(),
                     name: "",
                     description: "",
                     type: "",
@@ -113,89 +110,90 @@ function Recipe() {
                     allergy: "",
                     checked: false,
                     isOpen: false,
-                    inputs: [{ input1: "", input2: "", select: "", checked: false }],
-                    instructions: [{ instruction: "", checked: false }]
+                    isFiltered: false,
+                    inputs: [{ id: nanoid(), input1: "", input2: "", select: "", checked: false }],
+                    instructions: [{ id: nanoid(), instruction: "", checked: false }]
                 },
                 ...formData
             ])
     }
 
-    const handleAddSubForm = (formIndex) => {
+    const handleAddSubForm = (id, formIndex) => {
         const newFormData = [...formData]
-        newFormData[formIndex].inputs.push({ input1: "", input2: "", select: "", checked: false })
+        formData.map(item => {
+            if (item.id === id) {
+                const newFormData = [...formData]
+                item.inputs.push({ id: nanoid(), input1: "", input2: "", select: "", checked: false })
+            }
+        })
+
         setFormData(newFormData)
     }
 
-    const handleAddInstruction = (formIndex) => {
+    const handleAddInstruction = (id, formIndex) => {
         const newFormData = [...formData]
-        newFormData[formIndex].instructions.push({ instruction: "", checked: false })
+        formData.map(item => {
+            if (item.id === id) {
+                item.instructions.push({ id: nanoid(), instruction: "", checked: false })
+            }
+        })
         setFormData(newFormData)
     }
 
-    const handleInputChange = (formIndex, inputIndex, event) => {
+    const handleInputChange = (id, formIndex, inputIndex, event) => {
         const newFormData = [...formData]
-        newFormData[formIndex].inputs[inputIndex][event.target.name] =
-            event.target.value
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleInstructionChange = (formIndex, inputIndex, event) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].instructions[inputIndex][event.target.name] =
-            event.target.value
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    // removed code below to handle input amount in ingredients subForm
-
-    // const handleInputAmountChange = (formIndex, inputIndex, event) => {
-    //     const newFormData = [...formData]
-    //     newFormData[formIndex].inputs[inputIndex][event.target.name] =
-    //         event.target.value
-    //     setFormData(newFormData)
-    //     localStorage.setItem("formData", JSON.stringify(newFormData))
-    // }
-
-    const handleNameChange = (formIndex, event) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].name = event.target.value
+        formData.map(item => {
+            if (item.id === id) {
+                item.inputs[inputIndex][event.target.name] =
+                    event.target.value
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    // working on having the checked property display the current recipe.
-
-
-    function handleDisplayRecipe(formIndex, event) {
+    const handleInstructionChange = (id, formIndex, inputIndex, event) => {
         const newFormData = [...formData]
-        newFormData[formIndex].isOpen = !newFormData[formIndex].isOpen
-
-        console.log(`this is the original formData: ${formData[formIndex].isOpen}`)
-        console.log(`this is the copy of formData: ${newFormData[formIndex].isOpen}`)
-
+        formData.map(item => {
+            if (item.id === id) {
+                item.instructions[inputIndex][event.target.name] =
+                    event.target.value
+            }
+        })
         setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    // function handleDisplayRecipe(formIndex, event) {
-    //     const newFormData = formData.map((form, index) =>{
-    //         if(formIndex === index) {
-    //             return {
-    //                 ...form,
-    //                 isOpen: !form.isOpen
-    //             }
-    //         }else{
-    //             return{
-    //                 ...form
-    //             }
-    //         }
-    //     })
-    //     console.log(newFormData)
-    //     setFormData(newFormData)
-    // }
+    const handleNameChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    name: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
 
-
+    const handleDisplayRecipe = (formIndex, formId, event) => {
+        const newFormData = formData.map((form, index) => {
+            if (formId === form.id) {
+                return {
+                    ...form,
+                    isOpen: !form.isOpen
+                }
+            } else {
+                return {
+                    ...form
+                }
+            }
+        })
+        setFormData(newFormData)
+    }
 
     // change stops here
 
@@ -214,134 +212,203 @@ function Recipe() {
         setSearchTerm("")
     }
 
-    const handleDescriptionChange = (formIndex, event) => {
+    const handleDescriptionChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    description: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+
+    const handleServingsChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    servings: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+    const handleCookTimeChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    cookTime: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+    const handlePrepTimeChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    prepTime: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+    const handlePlateTimeChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    plateTime: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+    const handleAllergyChange = (formIndex, formId, event) => {
+        const newFormData = formData.map(item => {
+            if (item.id === formId) {
+                return {
+                    ...item,
+                    allergy: event.target.value,
+                }
+            } else {
+                return { ...item }
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(formData))
+    }
+
+    const handleCheckboxChange = (id, formIndex, event) => {
         const newFormData = [...formData]
-        newFormData[formIndex].description = event.target.value
+        formData.map(item => {
+            if (item.id === id) {
+                item.checked = event.target.checked
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handleServingsChange = (formIndex, event) => {
+    const handleRemoveForm = (id, formIndex) => {
         const newFormData = [...formData]
-        newFormData[formIndex].servings = event.target.value
+        const indexOfChecked = newFormData.findIndex(check => check.checked === true)
+        formData.map(item => {
+            if (item.id === id) {
+                newFormData.splice(indexOfChecked, 1)
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handleCookTimeChange = (formIndex, event) => {
+    const handleSubFormCheckboxChange = (id, subFormIndex, event) => {
         const newFormData = [...formData]
-        newFormData[formIndex].cookTime = event.target.value
+        newFormData.map(item => {
+            if (item.id === id) {
+                const subFormInputs = item.inputs.slice(
+                    subFormIndex * 1,
+                    subFormIndex * 1 + 1
+                )
+                if (event.target.checked) {
+                    subFormInputs.forEach((input) => (input.checked = true))
+                } else {
+                    subFormInputs.forEach((input) => (input.checked = false))
+                }
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handlePrepTimeChange = (formIndex, event) => {
+    const handleSubIstructionCheckboxChange = (id, subIngredientIndex, event) => {
         const newFormData = [...formData]
-        newFormData[formIndex].prepTime = event.target.value
+        newFormData.map(item => {
+            if (item.id === id) {
+                const subFormIngredientInputs = item.instructions.slice(
+                    subIngredientIndex * 1,
+                    subIngredientIndex * 1 + 1
+                )
+                if (event.target.checked) {
+                    subFormIngredientInputs.forEach((input) => (input.checked = true))
+                } else {
+                    subFormIngredientInputs.forEach((input) => (input.checked = false))
+                }
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handlePlateTimeChange = (formIndex, event) => {
+    const handleRemoveSubForm = (id, subFormIndex) => {
         const newFormData = [...formData]
-        newFormData[formIndex].plateTime = event.target.value
+        newFormData.map(item => {
+            if (item.id === id) {
+                item.inputs.splice(subFormIndex * 1, 1)
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handleAllergyChange = (formIndex, event) => {
+    const handleRemoveSubInstructionForm = (id, subFormIndex) => {
         const newFormData = [...formData]
-        newFormData[formIndex].allergy = event.target.value
+        newFormData.map(item => {
+            if (item.id === id) {
+                item.instructions.splice(subFormIndex * 1, 1)
+            }
+        })
+        setFormData(newFormData)
+        localStorage.setItem("formData", JSON.stringify(newFormData))
+
+    }
+
+    const handleTypeChange = (id, formIndex, event) => {
+        const newFormData = [...formData]
+        formData.map(item => {
+            if (item.id === id) {
+                item.type = event.target.value
+            }
+        })
         setFormData(newFormData)
         localStorage.setItem("formData", JSON.stringify(newFormData))
     }
 
-    const handleCheckboxChange = (formIndex, event) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].checked = event.target.checked
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleRemoveForm = (formIndex) => {
-        const newFormData = [...formData]
-        newFormData.splice(formIndex, 1)
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleSubFormCheckboxChange = (formIndex, subFormIndex, event) => {
-        const newFormData = [...formData]
-        const subFormInputs = newFormData[formIndex].inputs.slice(
-            subFormIndex * 1,
-            subFormIndex * 1 + 1
-        )
-        if (event.target.checked) {
-            subFormInputs.forEach((input) => (input.checked = true))
-        } else {
-            subFormInputs.forEach((input) => (input.checked = false))
-        }
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleSubIngredientCheckboxChange = (formIndex, subIngredientIndex, event) => {
-        const newFormData = [...formData]
-        const subFormIngredientInputs = newFormData[formIndex].instructions.slice(
-            subIngredientIndex * 1,
-            subIngredientIndex * 1 + 1
-        )
-        if (event.target.checked) {
-            subFormIngredientInputs.forEach((input) => (input.checked = true))
-        } else {
-            subFormIngredientInputs.forEach((input) => (input.checked = false))
-        }
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleRemoveSubForm = (formIndex, subFormIndex) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].inputs.splice(subFormIndex * 1, 1)
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleRemoveSubInstructionForm = (formIndex, subFormIndex) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].instructions.splice(subFormIndex * 1, 1)
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleTypeChange = (formIndex, event) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].type = event.target.value
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    const handleSelectChange = (formIndex, event) => {
-        const newFormData = [...formData]
-        newFormData[formIndex].inputs.select = event.target.value
-        setFormData(newFormData)
-        localStorage.setItem("formData", JSON.stringify(newFormData))
-    }
-
-    // BUG 
-    // when used it disables all functions to the form "Sometimes".////
     const filteredData = formData.filter((form) => {
         return form.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             form.type.toLowerCase().includes(searchTerm.toLowerCase())
     }
     )
 
+
     useEffect(() => {
         localStorage.setItem("formData", JSON.stringify(formData))
     }, [formData])
 
-    // Feature
-    // Trying to dynamicly change the height of the textarea fields as person types
 
     // const textarea = document.getElementsByClassName('.textareaTitle')
     // textarea.addEventListener("keyup", e => {
@@ -355,9 +422,9 @@ function Recipe() {
     return (
         <>
             <div className='margin-bottom'>
-                <hr />
                 {filteredData.map((form, formIndex) => (
                     <div key={formIndex}>
+                        <hr />
                         <section className='recipe-header'>
                             <label>
 
@@ -367,7 +434,7 @@ function Recipe() {
                                     className='recipe-title textareaTitle'
                                     placeholder='Recipe Title'
                                     value={form.name}
-                                    onChange={(event) => handleNameChange(formIndex, event)}
+                                    onChange={(event) => handleNameChange(formIndex, form.id, event)}
                                 ></textarea>
                             </label>
                             <label>
@@ -377,7 +444,7 @@ function Recipe() {
                                     className='recipe-info'
                                     placeholder='Menu Description'
                                     value={form.description}
-                                    onChange={(event) => handleDescriptionChange(formIndex, event)}
+                                    onChange={(event) => handleDescriptionChange(formIndex, form.id, event)}
                                 >
                                 </textarea>
                             </label>
@@ -385,7 +452,7 @@ function Recipe() {
                         <div className='flex-align'>
 
                             <div className='center-item-container'>
-                                <button onClick={(event) => handleDisplayRecipe(formIndex, event)} className="open-recipe-button">{`${form.isOpen ? "Close Recipe" : "Open Recipe"}`}</button>
+                                <button onClick={(event) => handleDisplayRecipe(formIndex, form.id, event)} className="open-recipe-button">{`${form.isOpen ? "Close Recipe" : "Open Recipe"}`}</button>
                             </div>
                             {form.name != '' && form.isOpen && <div className='center-item-container'>
                                 <button onClick={(event) => handlePrintRecipe(formIndex, event)} className="open-recipe-button">Print Recipe</button>
@@ -398,10 +465,10 @@ function Recipe() {
                                 className='allergy-input'
                                 placeholder='Egg, Fish, Milk, Peanuts, Shellfish, Soy, Tree nuts, Wheat'
                                 value={form.allergy}
-                                onChange={(event) => handleAllergyChange(formIndex, event)}
+                                onChange={(event) => handleAllergyChange(formIndex, form.id, event)}
                             />
                         </label>
-                        {form.isOpen && <select name="" className='center-type-container' value={form.type} onChange={(event) => handleTypeChange(formIndex, event)} id="">
+                        {form.isOpen && <select name="" className='center-type-container' value={form.type} onChange={(event) => handleTypeChange(form.id, formIndex, event)} id="">
                             <option value="all">Type</option>
                             <option value="amuse">Amuse</option>
                             <option value="appetizer">Appetizer</option>
@@ -423,7 +490,7 @@ function Recipe() {
                                         className='servings-info-input'
                                         placeholder='6'
                                         value={form.servings}
-                                        onChange={(event) => handleServingsChange(formIndex, event)}
+                                        onChange={(event) => handleServingsChange(formIndex, form.id, event)}
                                     />
                                 </label>
                                 <label className='label-font'>
@@ -433,7 +500,7 @@ function Recipe() {
                                         className='cook-time-input'
                                         placeholder='20 minute'
                                         value={form.cookTime}
-                                        onChange={(event) => handleCookTimeChange(formIndex, event)}
+                                        onChange={(event) => handleCookTimeChange(formIndex, form.id, event)}
                                     />
                                 </label>
                             </div>
@@ -446,7 +513,7 @@ function Recipe() {
                                         className='prep-time-input'
                                         placeholder='1 hour'
                                         value={form.prepTime}
-                                        onChange={(event) => handlePrepTimeChange(formIndex, event)}
+                                        onChange={(event) => handlePrepTimeChange(formIndex, form.id, event)}
                                     />
                                 </label>
                                 <label className='label-font'>
@@ -456,7 +523,7 @@ function Recipe() {
                                         className='plate-time-input'
                                         placeholder='4 minutes'
                                         value={form.plateTime}
-                                        onChange={(event) => handlePlateTimeChange(formIndex, event)}
+                                        onChange={(event) => handlePlateTimeChange(formIndex, form.id, event)}
                                     />
                                 </label>
                             </div>
@@ -471,15 +538,15 @@ function Recipe() {
                                 className='check-box'
                                 checked={form.checked}
                                 onChange={(event) =>
-                                    handleCheckboxChange(formIndex, event)
+                                    handleCheckboxChange(form.id, formIndex, event)
                                 }
                             />
                         </label>}
-                        {form.checked && <button type="button" onClick={() => handleRemoveForm(formIndex)}>
+                        {form.checked && <button type="button" onClick={() => handleRemoveForm(form.id, formIndex)}>
                             Are you sure?
                         </button>}
                         {form.isOpen && <h2>Ingredients</h2>}
-                        {form.isOpen && <button type="button" onClick={() => handleAddSubForm(formIndex)}>
+                        {form.isOpen && <button type="button" onClick={() => handleAddSubForm(form.id, formIndex)}>
                             Add Ingredient
                         </button>}
                         {form.inputs.map((subForm, subFormIndex) => (
@@ -493,7 +560,7 @@ function Recipe() {
                                             name="input1"
                                             value={subForm.input1}
                                             onChange={(event) =>
-                                                handleInputChange(formIndex, subFormIndex, event)
+                                                handleInputChange(form.id, formIndex, subFormIndex, event)
                                             }
                                         />
                                     </label>
@@ -505,7 +572,7 @@ function Recipe() {
                                             name="input2"
                                             value={subForm.input2}
                                             onChange={(event) =>
-                                                handleInputChange(formIndex, subFormIndex, event)
+                                                handleInputChange(form.id, formIndex, subFormIndex, event)
                                             }
                                         />
                                     </label>
@@ -513,7 +580,7 @@ function Recipe() {
                                         <select
                                             name="select"
                                             value={subForm.select}
-                                            onChange={(event) => handleInputChange(formIndex, subFormIndex, event)}
+                                            onChange={(event) => handleInputChange(form.id, formIndex, subFormIndex, event)}
                                         >
                                             <option value="unit">Unit</option>
                                             <option value="t.t.">t.t.</option>
@@ -539,20 +606,20 @@ function Recipe() {
                                             className='check-box'
                                             checked={subForm.checked}
                                             onChange={(event) =>
-                                                handleSubFormCheckboxChange(formIndex, subFormIndex, event)
+                                                handleSubFormCheckboxChange(form.id, subFormIndex, event)
                                             }
                                         />
                                     </label>
                                 </form>}
                                 <div className='center-item-container'>
-                                    {subForm.checked && <button type="button" onClick={() => handleRemoveSubForm(formIndex, subFormIndex)}>
+                                    {subForm.checked && form.isOpen && <button type="button" onClick={() => handleRemoveSubForm(form.id, subFormIndex)}>
                                         Are you sure?
                                     </button>}
                                 </div>
                             </section>
                         ))}
                         {form.isOpen && <h2>Instructions</h2>}
-                        {form.isOpen && <button type="button" onClick={() => handleAddInstruction(formIndex)}>
+                        {form.isOpen && <button type="button" onClick={() => handleAddInstruction(form.id, formIndex)}>
                             Add Instruction
                         </button>}
                         {form.instructions.map((subInstruction, subInstructionIndex) => (
@@ -570,7 +637,7 @@ function Recipe() {
                                             className='instruction-text-area'
                                             value={subInstruction.instruction}
                                             onChange={(event) =>
-                                                handleInstructionChange(formIndex, subInstructionIndex, event)
+                                                handleInstructionChange(form.id, formIndex, subInstructionIndex, event)
                                             }
                                         >
                                         </textarea>
@@ -583,21 +650,21 @@ function Recipe() {
                                                 className='check-box'
                                                 checked={subInstruction.checked}
                                                 onChange={(event) =>
-                                                    handleSubIngredientCheckboxChange(formIndex, subInstructionIndex, event)
+                                                    handleSubIstructionCheckboxChange(form.id, subInstructionIndex, event)
                                                 }
                                             />
                                         </label>
 
                                     </div>}
                                 </div>
-                                {subInstruction.checked && <button type="button" onClick={() => handleRemoveSubInstructionForm(formIndex, subInstructionIndex)}>
+                                {subInstruction.checked && form.isOpen && <button type="button" onClick={() => handleRemoveSubInstructionForm(form.id, subInstructionIndex)}>
                                     Remove Instruction
                                 </button>}
                             </div>
                         ))}
-                        <hr />
                     </div>
                 ))}
+                <hr />
             </div>
             <section className='navigate-contianer'>
                 <div className='center-item-container'>
