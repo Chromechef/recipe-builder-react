@@ -171,8 +171,31 @@ function Recipe() {
     function handleDisplayRecipe(formIndex, event) {
         const newFormData = [...formData]
         newFormData[formIndex].isOpen = !newFormData[formIndex].isOpen
+
+        console.log(`this is the original formData: ${formData[formIndex].isOpen}`)
+        console.log(`this is the copy of formData: ${newFormData[formIndex].isOpen}`)
+
         setFormData(newFormData)
     }
+
+    // function handleDisplayRecipe(formIndex, event) {
+    //     const newFormData = formData.map((form, index) =>{
+    //         if(formIndex === index) {
+    //             return {
+    //                 ...form,
+    //                 isOpen: !form.isOpen
+    //             }
+    //         }else{
+    //             return{
+    //                 ...form
+    //             }
+    //         }
+    //     })
+    //     console.log(newFormData)
+    //     setFormData(newFormData)
+    // }
+
+
 
     // change stops here
 
